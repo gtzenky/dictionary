@@ -5,4 +5,8 @@
     <string name="hello_world">Hello world!</string>
     <string name="action_settings">Settings</string>
 
+    <!-- search box -->
+    <string name="search_message">Search Word</string>    
+    <string name="button_search">Search</string>
+
 </resources>
