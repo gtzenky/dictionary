@@ -3,10 +3,16 @@
 
     <string name="app_name">Dictionary</string>
     <string name="hello_world">Hello world!</string>
-    <string name="action_settings">Settings</string>
 
+    <!-- action menu -->
+    <string name="action_search">Search</string>
+    <string name="action_settings">Settings</string>
+    
     <!-- search box -->
-    <string name="search_message">Search Word</string>    
-    <string name="button_search">Search</string>
+    <string name="search_message">Find Word</string>
+    <string name="button_search">Find</string>
+    
+    <!-- DisplayMessageActivity -->
+    <string name="title_activity_display_message">My Message</string>
 
 </resources>
