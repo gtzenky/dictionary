@@ -97,7 +97,7 @@ public class LingoesLd2Reader {
     dataRawBytes.order(ByteOrder.LITTLE_ENDIAN);
     dataRawBytes.rewind();
 
-    System.out.println("æ–‡ä»¶ï¼š" + ld2File);
+    System.out.println("File Path:" + ld2File);
     System.out.println("ç±»åž‹ï¼š" + new String(dataRawBytes.array(), 0, 4, "ASCII"));
     System.out.println("ç‰ˆæœ¬ï¼š" + dataRawBytes.getShort(0x18) + "." + dataRawBytes.getShort(0x1A));
     System.out.println("ID: 0x" + Long.toHexString(dataRawBytes.getLong(0x1C)));
@@ -124,19 +124,15 @@ public class LingoesLd2Reader {
   private static final long decompress(final String inflatedFile, final ByteBuffer data, final int offset, final int length, final boolean append)
       throws IOException, DataFormatException {
     final Inflater inflator = new Inflater();
-//    try (final InflaterInputStream in = new InflaterInputStream(new ByteArrayInputStream(data.array(), offset, length), inflator, 1024 * 8);
-//        final FileOutputStream out = new FileOutputStream(inflatedFile, append);) {
-//      LingoesLd2Reader.writeInputStream(in, out);
-//    }
     FileOutputStream out = new FileOutputStream(inflatedFile, append);
-    
     inflator.setInput(data.array(), offset, length);
-    byte[] decompressedBytes = new byte[length];
-    long bytesRead = inflator.inflate(decompressedBytes);
-    if (bytesRead != length) {
-      throw new AssertionError();
+    while(!inflator.finished()) {
+      byte[] decompressedBytes = new byte[1024 * 8];
+      inflator.inflate(decompressedBytes);
+      out.write(decompressedBytes);
     }
-    out.write(decompressedBytes);
+    long bytesRead = inflator.getTotalIn();
+    out.close();
     inflator.end();
     return bytesRead;
   }
@@ -234,7 +230,7 @@ public class LingoesLd2Reader {
   }
 
   private static final void inflate(final ByteBuffer dataRawBytes, final List<Integer> deflateStreams, final String inflatedFile) {
-    System.out.println("è§£åŽ‹ç¼©'" + deflateStreams.size() + "'ä¸ªæ•°æ�®æµ�è‡³'" + inflatedFile + "'ã€‚ã€‚ã€‚");
+    System.out.println("list DeflateStreams size: " + deflateStreams.size() + "'ä¸ªæ•°æ�®æµ�è‡³'" + inflatedFile + "'ã€‚ã€‚ã€‚");
     final int startOffset = dataRawBytes.position();
     int offset = -1;
     int lastOffset = startOffset;
@@ -247,7 +243,7 @@ public class LingoesLd2Reader {
         lastOffset = offset;
       }
     } catch (final Throwable e) {
-      System.err.println("è§£åŽ‹ç¼©å¤±è´¥: 0x" + Integer.toHexString(offset) + ": " + e.toString());
+      System.err.println("error è§£åŽ‹ç¼©å¤±è´¥: 0x" + Integer.toHexString(offset) + ": " + e.toString());
     }
   }
 
@@ -299,7 +295,7 @@ public class LingoesLd2Reader {
       deflateStreams.add(Integer.valueOf(offset));
     }
     final int offsetCompressedData = dataRawBytes.position();
-    System.out.println("ç´¢å¼•è¯�ç»„æ•°ç›®ï¼š" + definitions);
+    System.out.println("definitions " + definitions);
     System.out.println("ç´¢å¼•åœ°å�€/å¤§å°�ï¼š0x" + Integer.toHexString(offsetIndex) + " / " + (offsetCompressedDataHeader - offsetIndex) + " B");
     System.out.println("åŽ‹ç¼©æ•°æ�®åœ°å�€/å¤§å°�ï¼š0x" + Integer.toHexString(offsetCompressedData) + " / " + (limit - offsetCompressedData) + " B");
     System.out.println("è¯�ç»„ç´¢å¼•åœ°å�€/å¤§å°�ï¼ˆè§£åŽ‹ç¼©å�Žï¼‰ï¼š0x0 / " + inflatedWordsIndexLength + " B");
