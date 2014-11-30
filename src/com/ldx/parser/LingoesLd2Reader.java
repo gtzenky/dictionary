@@ -20,7 +20,6 @@
  */
 package com.ldx.parser;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -42,8 +41,8 @@ import java.nio.charset.CodingErrorAction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.zip.DataFormatException;
 import java.util.zip.Inflater;
-import java.util.zip.InflaterInputStream;
 
 /**
  * Lingoes LD2/LDF File Reader
@@ -123,13 +122,21 @@ public class LingoesLd2Reader {
   }
 
   private static final long decompress(final String inflatedFile, final ByteBuffer data, final int offset, final int length, final boolean append)
-      throws IOException {
+      throws IOException, DataFormatException {
     final Inflater inflator = new Inflater();
-    try (final InflaterInputStream in = new InflaterInputStream(new ByteArrayInputStream(data.array(), offset, length), inflator, 1024 * 8);
-        final FileOutputStream out = new FileOutputStream(inflatedFile, append);) {
-      LingoesLd2Reader.writeInputStream(in, out);
+//    try (final InflaterInputStream in = new InflaterInputStream(new ByteArrayInputStream(data.array(), offset, length), inflator, 1024 * 8);
+//        final FileOutputStream out = new FileOutputStream(inflatedFile, append);) {
+//      LingoesLd2Reader.writeInputStream(in, out);
+//    }
+    FileOutputStream out = new FileOutputStream(inflatedFile, append);
+    
+    inflator.setInput(data.array(), offset, length);
+    byte[] decompressedBytes = new byte[length];
+    long bytesRead = inflator.inflate(decompressedBytes);
+    if (bytesRead != length) {
+      throw new AssertionError();
     }
-    final long bytesRead = inflator.getBytesRead();
+    out.write(decompressedBytes);
     inflator.end();
     return bytesRead;
   }
